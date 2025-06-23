@@ -1,12 +1,12 @@
-﻿namespace EmuWarface.Game.Enums
+namespace EmuWarface.Game.Enums
 {
-    public enum SessionStatus
-    {
-        None,
-        PreGame,
-        InGame,
-        PostGame,
-        EndGame,
-        Ready
-    }
+	public enum SessionStatus
+	{
+		None,
+		PreGame,
+		InGame,
+		PostGame,
+		EndGame,
+		Ready
+	}
 }

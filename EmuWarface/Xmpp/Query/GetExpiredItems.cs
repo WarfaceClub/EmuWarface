@@ -1,27 +1,26 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game.Items;
-using EmuWarface.Xmpp;
 using System;
 using System.Xml;
+using EmuWarface.Core;
+using EmuWarface.Game.Items;
 
 namespace EmuWarface.Xmpp.Query
 {
-    public static class GetExpiredItems
-    {
-        [Query(IqType.Get, "get_expired_items")]
-        public static void GetExpiredItemsSerializer(Client client, Iq iq)
-        {
-            if (client.Profile == null)
-                throw new InvalidOperationException();
+	public static class GetExpiredItems
+	{
+		[Query(IqType.Get, "get_expired_items")]
+		public static void GetExpiredItemsSerializer(Client client, Iq iq)
+		{
+			if (client.Profile == null)
+				throw new InvalidOperationException();
 
-            XmlElement get_expired_items = Xml.Element(iq.Query.LocalName);
+			XmlElement get_expired_items = Xml.Element(iq.Query.LocalName);
 
-            Item.GetExpiredItems(client.ProfileId, client.Profile.Items).ForEach(item => get_expired_items.Child(item));
+			Item.GetExpiredItems(client.ProfileId, client.Profile.Items).ForEach(item => get_expired_items.Child(item));
 
-            client.Profile.Items.ForEach(item => get_expired_items.Child(item.Serialize()));
+			client.Profile.Items.ForEach(item => get_expired_items.Child(item.Serialize()));
 
-            iq.SetQuery(get_expired_items);
-            client.QueryResult(iq);
-        }
-    }
+			iq.SetQuery(get_expired_items);
+			client.QueryResult(iq);
+		}
+	}
 }

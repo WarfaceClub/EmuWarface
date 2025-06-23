@@ -1,10 +1,6 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game.Enums.Errors;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
 using System.Xml;
+using EmuWarface.Game.Enums.Errors;
 
 namespace EmuWarface.Game.Shops
 {

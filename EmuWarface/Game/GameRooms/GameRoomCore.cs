@@ -1,27 +1,24 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game.Enums;
-
-using EmuWarface.Xmpp;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
+using EmuWarface.Core;
+using EmuWarface.Game.Enums;
+using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game.GameRooms
 {
-    public class GameRoomCore : GameRoomExtension
+	public class GameRoomCore : GameRoomExtension
 	{
 		private string _name;
-		private string _private			= "0";
-		private string _teamsSwitched	= "0";
-		private string _teamBalanced	= "0";
-		private string _canPause		= "0";
+		private string _private = "0";
+		private string _teamsSwitched = "0";
+		private string _teamBalanced = "0";
+		private string _canPause = "0";
 		private string _minReadyPlayers = "1";
 
-		public List<Client> Players			{ get; set; }	= new List<Client>();
-		public List<Client> PlayersReserved { get; set; }	= new List<Client>();
+		public List<Client> Players { get; set; } = new List<Client>();
+		public List<Client> PlayersReserved { get; set; } = new List<Client>();
 
 		/*private List<Client>	_players = new List<Client>();
 		public List<Client>	Players
@@ -49,15 +46,15 @@ namespace EmuWarface.Game.GameRooms
 				_playersReserved = value;
 			}
 		}*/
-		public List<ulong>	InvitedPlayers	{ get; set; } = new List<ulong>();
+		public List<ulong> InvitedPlayers { get; set; } = new List<ulong>();
 
 		public Dictionary<ulong, RoomPlayerRemoveReason> LeftPlayers = new Dictionary<ulong, RoomPlayerRemoveReason>();
 
-		public int PlayersWarfaceCount		=> Players.Count(x => x.Profile.RoomPlayer.TeamId == Team.Warface);
-		public int PlayersBlackwoodCount	=> Players.Count(x => x.Profile.RoomPlayer.TeamId == Team.Blackwood);
+		public int PlayersWarfaceCount => Players.Count(x => x.Profile.RoomPlayer.TeamId == Team.Warface);
+		public int PlayersBlackwoodCount => Players.Count(x => x.Profile.RoomPlayer.TeamId == Team.Blackwood);
 
 		public GameRoomCore(string name, int minReadyPlayers)
-        {
+		{
 			Name = name;
 			MinReadyPlayers = minReadyPlayers;
 		}
@@ -65,7 +62,7 @@ namespace EmuWarface.Game.GameRooms
 		public string Name
 		{
 			get { return _name; }
-			set 
+			set
 			{
 				//TODO проверка на символы
 				if (!string.IsNullOrEmpty(value) && (value.Length > 0 || value.Length < 32))
@@ -103,21 +100,21 @@ namespace EmuWarface.Game.GameRooms
 		{
 			//<core teams_switched='0' room_name='Комната игрока пуэрман' private='0' players='15' can_start='0' team_balanced='1' min_ready_players='6' can_pause='0' revision='1356'>
 			XmlElement core = Xml.Element("core")
-				.Attr("teams_switched",		_teamsSwitched)
-				.Attr("room_name",			_name)
-				.Attr("private",			_private)
-				.Attr("players",			Players.Count)
-				.Attr("can_start",			Convert.ToInt32(CanStart))
-				.Attr("team_balanced",		_teamBalanced)
-				.Attr("min_ready_players",	_minReadyPlayers)
-				.Attr("can_pause",			_canPause)
-				.Attr("revision",			Revision);
+				.Attr("teams_switched", _teamsSwitched)
+				.Attr("room_name", _name)
+				.Attr("private", _private)
+				.Attr("players", Players.Count)
+				.Attr("can_start", Convert.ToInt32(CanStart))
+				.Attr("team_balanced", _teamBalanced)
+				.Attr("min_ready_players", _minReadyPlayers)
+				.Attr("can_pause", _canPause)
+				.Attr("revision", Revision);
 
-			XmlElement players			= Xml.Element("players");
-			XmlElement playersReserved	= Xml.Element("playersReserved");
+			XmlElement players = Xml.Element("players");
+			XmlElement playersReserved = Xml.Element("playersReserved");
 
-            lock (Players)
-            {
+			lock (Players)
+			{
 				foreach (var player in Players)
 				{
 					players.Child(player.RoomSerialize());
@@ -138,8 +135,8 @@ namespace EmuWarface.Game.GameRooms
 
 			var room_left_players = Xml.Element("room_left_players");
 
-            lock (LeftPlayers)
-            {
+			lock (LeftPlayers)
+			{
 				foreach (var left_player in LeftPlayers)
 				{
 					var player = Xml.Element("player")

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace EmuWarface.Core
 {
-    public class ServerException : Exception
-    {
-        public ServerException(string message)
-            : base (message)
-        {
+	public class ServerException : Exception
+	{
+		public ServerException(string message)
+			: base(message)
+		{
 
-        }
-    }
+		}
+	}
 }

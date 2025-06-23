@@ -1,16 +1,14 @@
-﻿using EmuWarface.Core;
+using System.Xml;
+using EmuWarface.Core;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Game.Missions;
-using EmuWarface.Xmpp;
-using System;
-using System.Xml;
 
 namespace EmuWarface.Xmpp.Query
 {
-    public static class GameRoomUpdatePvP
-    {
-        /*
+	public static class GameRoomUpdatePvP
+	{
+		/*
          <iq to='masterserver@warface/pvp_skilled_001' id='uid00000043' type='get' from='3@warface/GameClient' xmlns='jabber:client'>
 <query xmlns='urn:cryonline:k01'>
 <gameroom_open 
@@ -43,58 +41,58 @@ namespace EmuWarface.Xmpp.Query
 </iq>
          */
 
-        [Query(IqType.Get, "gameroom_update_pvp")]
-        public static void GameRoomUpdatePvPSerializer(Client client, Iq iq)
-        {
-            //TODO проверять карту и канал на котором он создает
-            if (client.Profile == null || client.Profile.Room == null)
-                throw new QueryException(1);
+		[Query(IqType.Get, "gameroom_update_pvp")]
+		public static void GameRoomUpdatePvPSerializer(Client client, Iq iq)
+		{
+			//TODO проверять карту и канал на котором он создает
+			if (client.Profile == null || client.Profile.Room == null)
+				throw new QueryException(1);
 
-            var q = iq.Query;
+			var q = iq.Query;
 
-            var roomPlayer = client.Profile.RoomPlayer;
-            var room = client.Profile.RoomPlayer.Room;
+			var roomPlayer = client.Profile.RoomPlayer;
+			var room = client.Profile.RoomPlayer.Room;
 
-            var rCore = room.GetExtension<GameRoomCore>();
-            var rMaster = room.GetExtension<GameRoomMaster>();
-            var rMission = room.GetExtension<GameRoomMission>();
-            var rCustomParams = room.GetExtension<GameRoomCustomParams>();
+			var rCore = room.GetExtension<GameRoomCore>();
+			var rMaster = room.GetExtension<GameRoomMaster>();
+			var rMission = room.GetExtension<GameRoomMission>();
+			var rCustomParams = room.GetExtension<GameRoomCustomParams>();
 
-            if (rCore == null || rMaster == null || rMaster.Client != client)
-                throw new QueryException(1);
+			if (rCore == null || rMaster == null || rMaster.Client != client)
+				throw new QueryException(1);
 
-            Mission mission = null;
-            string qMission = q.GetAttribute("mission_key");
-            if (qMission != rMission.Key)
-            {
-                mission = Mission.GetMission(room.Type, qMission);
+			Mission mission = null;
+			string qMission = q.GetAttribute("mission_key");
+			if (qMission != rMission.Key)
+			{
+				mission = Mission.GetMission(room.Type, qMission);
 
-                if (mission == null)
-                    throw new QueryException(1);
+				if (mission == null)
+					throw new QueryException(1);
 
-                if (!mission.Channels.Contains(client.Channel.ChannelType))
-                    throw new QueryException(1);
-            }
+				if (!mission.Channels.Contains(client.Channel.ChannelType))
+					throw new QueryException(1);
+			}
 
-            if (room.Type != RoomType.PvP_Public && room.Type != RoomType.PvP_ClanWar)
-                throw new QueryException(2);
+			if (room.Type != RoomType.PvP_Public && room.Type != RoomType.PvP_ClanWar)
+				throw new QueryException(2);
 
-            if (mission != null)
-                room.SetMission(mission);
+			if (mission != null)
+				room.SetMission(mission);
 
 
-            //room.SetRoomName(q.GetAttribute("room_name"));
+			//room.SetRoomName(q.GetAttribute("room_name"));
 
-            rCore.Private = q.GetAttribute("private") == "1" ? true : false;
+			rCore.Private = q.GetAttribute("private") == "1" ? true : false;
 
-            rCustomParams.SetRestrictions(q);
+			rCustomParams.SetRestrictions(q);
 
-            room.Update();
+			room.Update();
 
-            XmlElement gameroom_update_pvp = Xml.Element("gameroom_update_pvp").Child(room.Serialize(true));
+			XmlElement gameroom_update_pvp = Xml.Element("gameroom_update_pvp").Child(room.Serialize(true));
 
-            iq.SetQuery(gameroom_update_pvp);
-            client.QueryResult(iq);
-        }
-    }
+			iq.SetQuery(gameroom_update_pvp);
+			client.QueryResult(iq);
+		}
+	}
 }

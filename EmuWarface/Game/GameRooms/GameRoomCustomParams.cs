@@ -1,11 +1,8 @@
-﻿using EmuWarface.Game.Enums;
-
-using EmuWarface.Xmpp;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml;
+using EmuWarface.Game.Enums;
+using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game.GameRooms
 {
@@ -41,14 +38,14 @@ namespace EmuWarface.Game.GameRooms
 			//SetRestrictions(GameRestrictionSystem.GetDefaultRestrictions(channel, mode, type), channel, mode, type);
 		}
 
-		public string GetCurrentRestriction(string kind) 
+		public string GetCurrentRestriction(string kind)
 		{
-            try
-            {
+			try
+			{
 				return _restrictions.FirstOrDefault(x => x.Key == kind).Value;
 			}
-            catch
-            {
+			catch
+			{
 				return null;
 			}
 		}
@@ -125,12 +122,12 @@ namespace EmuWarface.Game.GameRooms
 			}
 
 			if (GameRestrictionSystem.ValidateRestriction(_mode, _type, kind, value))
-            {
+			{
 				switch (kind)
-                {
+				{
 					case "class_rifleman":
-						if(value == "0")
-                        {
+						if (value == "0")
+						{
 							ClassRestriction = ClassRestriction | Class.Rifleman;
 							_classRestriction -= (byte)Class.Rifleman;
 						}

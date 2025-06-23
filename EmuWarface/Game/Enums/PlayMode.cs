@@ -1,8 +1,8 @@
-﻿namespace EmuWarface.Game.Enums
+namespace EmuWarface.Game.Enums
 {
-    public enum PlayMode
-    {
-        PVE,
-        PVP
-    }
+	public enum PlayMode
+	{
+		PVE,
+		PVP
+	}
 }

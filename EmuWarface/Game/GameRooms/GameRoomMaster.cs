@@ -9,12 +9,12 @@ namespace EmuWarface.Game.GameRooms
 		public Client Client { get; private set; }
 
 		public GameRoomMaster(Client master)
-        {
+		{
 			Set(master);
 		}
 
 		public void Set(Client master)
-        {
+		{
 			Client = master;
 		}
 

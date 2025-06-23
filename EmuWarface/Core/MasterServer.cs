@@ -1,13 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Xmpp;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Xml;
 
 namespace EmuWarface.Core
 {
@@ -24,7 +20,7 @@ namespace EmuWarface.Core
 		public int Online => Server.Clients.Count(x => x.Presence != PlayerStatus.Logout && x.Presence != PlayerStatus.Offline && x.Channel == this);
 		public double Load => (double)Online / 100;
 
-		public List<GameRoom>	Rooms	{ get; set; } = new List<GameRoom>();
+		public List<GameRoom> Rooms { get; set; } = new List<GameRoom>();
 
 		//private static double _totalMemory = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
 		//private static Process _p = Process.GetCurrentProcess();

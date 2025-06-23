@@ -1,9 +1,9 @@
-﻿namespace EmuWarface.Game.Enums
+namespace EmuWarface.Game.Enums
 {
-    public enum VotingType
-    {
-        KickVote,
-        SurrenderVote,
-        PauseVote
-    }
+	public enum VotingType
+	{
+		KickVote,
+		SurrenderVote,
+		PauseVote
+	}
 }

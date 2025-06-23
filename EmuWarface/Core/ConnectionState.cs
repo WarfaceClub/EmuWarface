@@ -1,10 +1,10 @@
-﻿namespace EmuWarface.Core
+namespace EmuWarface.Core
 {
-    public enum ConnectionState
-    {
-        Connected,
-        Authed,
-        Binded,
-        Disconnected
-    }
+	public enum ConnectionState
+	{
+		Connected,
+		Authed,
+		Binded,
+		Disconnected
+	}
 }

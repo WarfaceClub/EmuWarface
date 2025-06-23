@@ -1,9 +1,9 @@
-﻿namespace EmuWarface.Game.Enums
+namespace EmuWarface.Game.Enums
 {
-    public enum RoomPlayerStatus
-    {
-        NotReady   = 0,
-        Ready      = 1,
-        Restricted = 2,
-    }
+	public enum RoomPlayerStatus
+	{
+		NotReady = 0,
+		Ready = 1,
+		Restricted = 2,
+	}
 }

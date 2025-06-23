@@ -9,9 +9,9 @@ using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Game.Notifications
 {
-    public partial class Notification
-    {
-        /*
+	public partial class Notification
+	{
+		/*
         <sync_notifications>
           <notif id="6016331252" type="64" confirmation="1" from_jid="masterserver@warface/pve_054_r1" message="">
             <invitation target="Покажите">
@@ -21,7 +21,7 @@ namespace EmuWarface.Game.Notifications
         </sync_notifications>
          */
 
-        /*
+		/*
          
 <notif id='0' type='131072' confirmation='0' from_jid='masterserver@warface/pve_059_r3' message=''>
 <new_rank_reached old_rank='1' new_rank='2'/>
@@ -67,155 +67,155 @@ namespace EmuWarface.Game.Notifications
 <notif id='0' type='128' confirmation='0' from_jid='masterserver@warface/pve_018_r1' message=''>
 <invite_result profile_id='25785570' jid='747193555@warface/GameClient' nickname='МрЛоки1965Герда' status='17' location='' experience='0' result='0' invite_date='0'/>
 </notif>*/
-        public ulong Id                 { get; set; }
-        //public long SecondsLeftToExpire { get; set; }
-        public long ExpirationTimeUtc { get; set; }
-        public NotificationType Type    { get; set; }
-        public XmlElement Element       { get; set; }
+		public ulong Id { get; set; }
+		//public long SecondsLeftToExpire { get; set; }
+		public long ExpirationTimeUtc { get; set; }
+		public NotificationType Type { get; set; }
+		public XmlElement Element { get; set; }
 
-        public long SecondsLeftToExpire
-        {
-            get
-            {
-                return Math.Clamp(ExpirationTimeUtc - DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0, long.MaxValue);
-            }
-            set
-            {
-                ExpirationTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + value;
-            }
-        }
+		public long SecondsLeftToExpire
+		{
+			get
+			{
+				return Math.Clamp(ExpirationTimeUtc - DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0, long.MaxValue);
+			}
+			set
+			{
+				ExpirationTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + value;
+			}
+		}
 
-        public bool Confirmation => Id != 0;
+		public bool Confirmation => Id != 0;
 
-        public Notification(NotificationType type, long expirationTimeUtc = 0)
-        {
-            Type                = type;
-            ExpirationTimeUtc   = expirationTimeUtc;
-        }
+		public Notification(NotificationType type, long expirationTimeUtc = 0)
+		{
+			Type = type;
+			ExpirationTimeUtc = expirationTimeUtc;
+		}
 
-        public Notification()
-        {
+		public Notification()
+		{
 
-        }
+		}
 
-        public XmlElement Serialize()
-        {
-            XmlElement notif = Xml.Element("notif")
-                .Attr("id", Id)
-                .Attr("type",                   (int)Type)
-                .Attr("confirmation",           Convert.ToByte(Confirmation))
-                .Attr("from_jid",               "masterserver@warface/emuwarface") //TODO test
-                .Attr("seconds_left_to_expire", SecondsLeftToExpire)
-                .Attr("message", "");
+		public XmlElement Serialize()
+		{
+			XmlElement notif = Xml.Element("notif")
+				.Attr("id", Id)
+				.Attr("type", (int)Type)
+				.Attr("confirmation", Convert.ToByte(Confirmation))
+				.Attr("from_jid", "masterserver@warface/emuwarface") //TODO test
+				.Attr("seconds_left_to_expire", SecondsLeftToExpire)
+				.Attr("message", "");
 
-            notif.Child(Element);
+			notif.Child(Element);
 
-            return notif;
-        }
+			return notif;
+		}
 
-        public static Notification ParseDataRow(DataRow row)
-        {
-            return new Notification
-            {
-                Id                      = Convert.ToUInt64(row["id"]),
-                ExpirationTimeUtc       = (long)row["expiration_time_utc"],
-                Type                    = (NotificationType)row["type"],
-                Element                 = Xml.Parse((string)row["data"]),
-            };
-        }
+		public static Notification ParseDataRow(DataRow row)
+		{
+			return new Notification
+			{
+				Id = Convert.ToUInt64(row["id"]),
+				ExpirationTimeUtc = (long)row["expiration_time_utc"],
+				Type = (NotificationType)row["type"],
+				Element = Xml.Parse((string)row["data"]),
+			};
+		}
 
-        public static List<Notification> GetNotifications(ulong profile_id)
-        {
-            List<Notification> notifs = new List<Notification>();
+		public static List<Notification> GetNotifications(ulong profile_id)
+		{
+			List<Notification> notifs = new List<Notification>();
 
 #if DEBUG
             return notifs;
 #endif
 
-            var result = SQL.QueryRead($"SELECT * FROM emu_notifications WHERE profile_id={profile_id}");
+			var result = SQL.QueryRead($"SELECT * FROM emu_notifications WHERE profile_id={profile_id}");
 
-            foreach (DataRow row in result.Rows)
-            {
-                var notif = Notification.ParseDataRow(row);
+			foreach (DataRow row in result.Rows)
+			{
+				var notif = Notification.ParseDataRow(row);
 
-                if(notif.SecondsLeftToExpire == 0)
-                {
-                    RemoveNotification(profile_id, notif.Id);
-                }
-                else
-                {
-                    notifs.Add(notif);
-                }
-            }
+				if (notif.SecondsLeftToExpire == 0)
+				{
+					RemoveNotification(profile_id, notif.Id);
+				}
+				else
+				{
+					notifs.Add(notif);
+				}
+			}
 
-            return notifs;
-        }
+			return notifs;
+		}
 
-        public static Notification GetNotification(ulong profile_id, ulong id)
-        {
-            DataTable db = SQL.QueryRead($"SELECT * FROM emu_notifications WHERE id={id} AND profile_id={profile_id}");
+		public static Notification GetNotification(ulong profile_id, ulong id)
+		{
+			DataTable db = SQL.QueryRead($"SELECT * FROM emu_notifications WHERE id={id} AND profile_id={profile_id}");
 
-            if (db.Rows.Count != 1)
-                return null;
+			if (db.Rows.Count != 1)
+				return null;
 
-            return Notification.ParseDataRow(db.Rows[0]);
-        }
+			return Notification.ParseDataRow(db.Rows[0]);
+		}
 
-        public static void RemoveNotification(ulong profile_id, ulong id)
-        {
-            SQL.Query($"DELETE FROM emu_notifications WHERE profile_id={profile_id} AND id={id}");
-        }
+		public static void RemoveNotification(ulong profile_id, ulong id)
+		{
+			SQL.Query($"DELETE FROM emu_notifications WHERE profile_id={profile_id} AND id={id}");
+		}
 
-        public static void AddNotification(ulong profile_id, Notification notif)
-        {
-            MySqlCommand cmd = new MySqlCommand("INSERT INTO emu_notifications (`profile_id`, `type`, `confirmation`, `data`, `expiration_time_utc`) VALUES " +
-                $"(@profile_id, @type, @confirmation, @data, @expiration_time_utc); SELECT LAST_INSERT_ID();");
+		public static void AddNotification(ulong profile_id, Notification notif)
+		{
+			MySqlCommand cmd = new MySqlCommand("INSERT INTO emu_notifications (`profile_id`, `type`, `confirmation`, `data`, `expiration_time_utc`) VALUES " +
+				$"(@profile_id, @type, @confirmation, @data, @expiration_time_utc); SELECT LAST_INSERT_ID();");
 
-            cmd.Parameters.AddWithValue("@profile_id", profile_id);
-            cmd.Parameters.AddWithValue("@type", (int)notif.Type);
-            cmd.Parameters.AddWithValue("@confirmation", 1);
-            cmd.Parameters.AddWithValue("@data", notif.Element.OuterXml);
-            cmd.Parameters.AddWithValue("@expiration_time_utc", notif.ExpirationTimeUtc);
+			cmd.Parameters.AddWithValue("@profile_id", profile_id);
+			cmd.Parameters.AddWithValue("@type", (int)notif.Type);
+			cmd.Parameters.AddWithValue("@confirmation", 1);
+			cmd.Parameters.AddWithValue("@data", notif.Element.OuterXml);
+			cmd.Parameters.AddWithValue("@expiration_time_utc", notif.ExpirationTimeUtc);
 
-            DataTable dt = SQL.QueryRead(cmd);
+			DataTable dt = SQL.QueryRead(cmd);
 
-            notif.Id = Convert.ToUInt64(dt.Rows[0][0]);
-        }
+			notif.Id = Convert.ToUInt64(dt.Rows[0][0]);
+		}
 
-        public static void SyncNotifications(ulong profile_id, params Notification[] notifs)
-        {
-            Client client = null;
-            lock (Server.Clients)
-            {
-                client = Server.Clients.FirstOrDefault(x => x.ProfileId == profile_id);
-            }
+		public static void SyncNotifications(ulong profile_id, params Notification[] notifs)
+		{
+			Client client = null;
+			lock (Server.Clients)
+			{
+				client = Server.Clients.FirstOrDefault(x => x.ProfileId == profile_id);
+			}
 
-            if (client != null && client.Profile != null)
-                SyncNotifications(client, notifs);
-        }
+			if (client != null && client.Profile != null)
+				SyncNotifications(client, notifs);
+		}
 
-        public static void SyncNotifications(Client client, params Notification[] notifs)
-        {
-            if (client == null || client.Profile == null)
-                return;
+		public static void SyncNotifications(Client client, params Notification[] notifs)
+		{
+			if (client == null || client.Profile == null)
+				return;
 
-            XmlElement response = Xml.Element("sync_notifications");
+			XmlElement response = Xml.Element("sync_notifications");
 
-            if (notifs.Length == 0)
-            {
-                GetNotifications(client.ProfileId).ForEach(x => response.Child(x.Serialize()));
-            }
-            else
-            {
-                foreach (var notif in notifs)
-                {
-                    response.Child(notif.Serialize());
-                }
-            }
+			if (notifs.Length == 0)
+			{
+				GetNotifications(client.ProfileId).ForEach(x => response.Child(x.Serialize()));
+			}
+			else
+			{
+				foreach (var notif in notifs)
+				{
+					response.Child(notif.Serialize());
+				}
+			}
 
-            //Iq iq = new Iq(IqType.Get, client.Jid, Server.Channels.First().Jid);
-            //client.QueryGet(iq.SetQuery(response));
-            client.QueryGet(response);
-        }
-    }
+			//Iq iq = new Iq(IqType.Get, client.Jid, Server.Channels.First().Jid);
+			//client.QueryGet(iq.SetQuery(response));
+			client.QueryGet(response);
+		}
+	}
 }

@@ -580,8 +580,8 @@ namespace EmuWarface.Core
 				if (db.Rows.Count == 0)
 				{
 #if !DEBUG
-                    Send(Xml.Element("failure", "urn:ietf:params:xml:ns:xmpp-sasl"));
-                    return false;
+					Send(Xml.Element("failure", "urn:ietf:params:xml:ns:xmpp-sasl"));
+					return false;
 #endif
 				}
 				else

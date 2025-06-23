@@ -1,36 +1,33 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game.Enums;
-using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
+using EmuWarface.Core;
+using EmuWarface.Game.Enums;
 
 namespace EmuWarface.Game
 {
-    public class ProfileBan
-    {
-        public ulong ProfileId;
-        public RoomType RoomType;
-        public BanType  BanType;
-        public long BanSecondsLeft;
-        public long TrialSecondsLeft;
-        public int LastBanIndex;
+	public class ProfileBan
+	{
+		public ulong ProfileId;
+		public RoomType RoomType;
+		public BanType BanType;
+		public long BanSecondsLeft;
+		public long TrialSecondsLeft;
+		public int LastBanIndex;
 
-        public static List<ProfileBan> GetBans(ulong profile_id)
-        {
-            List<ProfileBan> items = new List<ProfileBan>();
+		public static List<ProfileBan> GetBans(ulong profile_id)
+		{
+			List<ProfileBan> items = new List<ProfileBan>();
 
-            var db = SQL.QueryRead($"SELECT * FROM emu_profile_bans WHERE profile_id={profile_id}");
+			var db = SQL.QueryRead($"SELECT * FROM emu_profile_bans WHERE profile_id={profile_id}");
 
-            /*foreach (DataRow row in db.Rows)
+			/*foreach (DataRow row in db.Rows)
             {
                 items.Add(ParseDataRow(row));
             }*/
 
-            return items;
-        }
+			return items;
+		}
 
-        /*private static ProfileBan ParseDataRow(DataRow row)
+		/*private static ProfileBan ParseDataRow(DataRow row)
         {
             return new ProfileBan
             {
@@ -39,5 +36,5 @@ namespace EmuWarface.Game
                 BanType     = (ulong)row["profile_id"],
             };
         }*/
-    }
+	}
 }

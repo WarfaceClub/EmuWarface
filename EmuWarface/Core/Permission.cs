@@ -1,10 +1,10 @@
-﻿namespace EmuWarface.Core
+namespace EmuWarface.Core
 {
-    public enum Permission
-    {
-        None,
-        Give,
-        Moderator,
-        Admin
-    }
+	public enum Permission
+	{
+		None,
+		Give,
+		Moderator,
+		Admin
+	}
 }

@@ -1,9 +1,6 @@
-﻿using EmuWarface.Game.Enums;
-using EmuWarface.Xmpp;
-using System;
-using System.Linq;
-using System.Timers;
 using System.Xml;
+using EmuWarface.Game.Enums;
+using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game.GameRooms
 {
@@ -21,27 +18,27 @@ namespace EmuWarface.Game.GameRooms
 		private int _timeout = 60;
 #endif
 
-		public bool AutoStartTimeout			{ get; set; }
-		public int AutoStartTimeoutLeft			{ get; set; }
+		public bool AutoStartTimeout { get; set; }
+		public int AutoStartTimeoutLeft { get; set; }
 		//TODO ?
-		public bool CanManualStart				{ get; set; }
-		public int JoinedIntermissionTimeout	{ get; set; }
+		public bool CanManualStart { get; set; }
+		public int JoinedIntermissionTimeout { get; set; }
 
 		public override XmlElement Serialize()
 		{
 			return Xml.Element("auto_start")
-				.Attr("auto_start_timeout",				AutoStartTimeout ? 1 : 0)
-				.Attr("auto_start_timeout_left",		AutoStartTimeoutLeft)
-				.Attr("can_manual_start",				CanManualStart ? 1 : 0)
-				.Attr("joined_intermission_timeout",	JoinedIntermissionTimeout)
+				.Attr("auto_start_timeout", AutoStartTimeout ? 1 : 0)
+				.Attr("auto_start_timeout_left", AutoStartTimeoutLeft)
+				.Attr("can_manual_start", CanManualStart ? 1 : 0)
+				.Attr("joined_intermission_timeout", JoinedIntermissionTimeout)
 				.Attr("revision", Revision);
 		}
 
 		public GameRoomAutoStart(GameRoom room)
 		{
-			_room		= room;
-			_rCore		= _room.GetExtension<GameRoomCore>(false);
-			_rSession	= _room.GetExtension<GameRoomSession>(false);
+			_room = room;
+			_rCore = _room.GetExtension<GameRoomCore>(false);
+			_rSession = _room.GetExtension<GameRoomSession>(false);
 
 			Start();
 		}
@@ -49,19 +46,19 @@ namespace EmuWarface.Game.GameRooms
 		private void UpdateAutoStart()
 		{
 			if (!AutoStartTimeout)
-            {
+			{
 				if (_rSession.Status == SessionStatus.None || _rCore.MinReadyPlayers > _rCore.Players.Count)
 				{
 					Stop();
 				}
-                else
-                {
+				else
+				{
 					Start();
 				}
 			}
 
 			if (AutoStartTimeoutLeft-- <= 0)
-            {
+			{
 				AutoStartTimeoutLeft = 0;
 
 				if (_rCore.MinReadyPlayers > _rCore.Players.Count)
@@ -79,8 +76,8 @@ namespace EmuWarface.Game.GameRooms
 
 		public void Stop()
 		{
-			AutoStartTimeout		= false;
-			AutoStartTimeoutLeft	= 0;
+			AutoStartTimeout = false;
+			AutoStartTimeoutLeft = 0;
 
 			Update();
 		}

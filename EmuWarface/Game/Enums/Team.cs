@@ -1,9 +1,9 @@
-﻿namespace EmuWarface.Game.Enums
+namespace EmuWarface.Game.Enums
 {
-    public enum Team
-    {
-        None,
-        Warface,
-        Blackwood
-    }
+	public enum Team
+	{
+		None,
+		Warface,
+		Blackwood
+	}
 }
