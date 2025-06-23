@@ -1,5 +1,4 @@
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game.GameRooms

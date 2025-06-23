@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Timers;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game

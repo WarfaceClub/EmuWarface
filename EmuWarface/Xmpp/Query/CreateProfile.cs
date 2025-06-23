@@ -1,12 +1,9 @@
 using System;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.Enums.Errors;
 using EmuWarface.Game.Notifications;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Xmpp.Query
 {

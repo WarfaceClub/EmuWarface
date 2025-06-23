@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.Enums.Errors;
@@ -12,7 +11,6 @@ using EmuWarface.Game.Items;
 using EmuWarface.Game.Notifications;
 using EmuWarface.Game.Shops;
 using EmuWarface.Xmpp;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Game
 {

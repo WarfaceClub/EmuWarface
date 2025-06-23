@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Game.Enums.Errors;
 using EmuWarface.Game.Items;
 using EmuWarface.Game.Notifications;

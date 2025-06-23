@@ -1,6 +1,4 @@
 using System.Linq;
-using EmuWarface.Core;
-using EmuWarface.Game;
 
 namespace EmuWarface.Xmpp.Query
 {

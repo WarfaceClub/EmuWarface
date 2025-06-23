@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Xmpp;
 

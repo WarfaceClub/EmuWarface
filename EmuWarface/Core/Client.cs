@@ -10,12 +10,10 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Xmpp;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Core
 {

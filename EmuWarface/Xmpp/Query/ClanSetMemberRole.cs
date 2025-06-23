@@ -1,6 +1,4 @@
 using System;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Notifications;
 

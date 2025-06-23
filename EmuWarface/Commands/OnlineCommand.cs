@@ -1,5 +1,4 @@
 using System.Linq;
-using EmuWarface.Core;
 
 namespace EmuWarface.Commands
 {

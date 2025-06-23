@@ -1,5 +1,4 @@
 using System;
-using EmuWarface.Core;
 using EmuWarface.Game.Clans;
 
 namespace EmuWarface.Xmpp.Query

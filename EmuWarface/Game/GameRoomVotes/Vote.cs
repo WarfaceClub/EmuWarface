@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using EmuWarface.Core;
 using EmuWarface.Game.Enums;
 using EmuWarface.Xmpp;
 

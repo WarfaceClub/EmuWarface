@@ -1,5 +1,4 @@
 using System.Linq;
-using EmuWarface.Core;
 using EmuWarface.Game.GameRooms;
 
 namespace EmuWarface.Xmpp.Query

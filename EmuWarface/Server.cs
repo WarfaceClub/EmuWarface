@@ -5,8 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using EmuWarface.Core;
-using EmuWarface.Game;
 
 namespace EmuWarface
 {

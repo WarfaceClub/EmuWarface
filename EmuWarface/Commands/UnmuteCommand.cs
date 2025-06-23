@@ -1,6 +1,3 @@
-using EmuWarface.Core;
-using EmuWarface.Game;
-
 namespace EmuWarface.Commands
 {
 	public class UnmuteCommand : ICmd

@@ -1,4 +1,3 @@
-using EmuWarface.Core;
 using EmuWarface.Game.Notifications;
 
 namespace EmuWarface.Commands

@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using EmuWarface.Core;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Game.Notifications;

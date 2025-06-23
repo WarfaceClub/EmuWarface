@@ -1,7 +1,5 @@
 using System;
 using System.Data;
-using System.IO;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Core
 {
@@ -20,7 +18,34 @@ namespace EmuWarface.Core
             //Pooling             = true,
             ConvertZeroDateTime = true
         }.ToString();*/
-		private static readonly string constr = $"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};database={Config.Sql.Database};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True";
+
+		static Lazy<string> constr = new Lazy<string>(() =>
+		{
+			var result = new MySqlConnectionStringBuilder();
+			result.Server = Config.Sql.Server;
+			result.UserID = Config.Sql.User;
+			result.Password = Config.Sql.Password;
+			result.Database = Config.Sql.Database;
+
+			if (!string.IsNullOrWhiteSpace(Config.Sql.CharacterSet))
+				result.CharacterSet = Config.Sql.CharacterSet;
+
+			result.Port = Config.Sql.Port;
+
+			result.ConvertZeroDateTime = true;
+			result.CancellationTimeout = 15_000;
+			result.ConnectionProtocol = MySqlConnectionProtocol.Tcp;
+
+			return result.ToString();
+		});
+
+		//private static readonly string constr = $"server={Config.Sql.Server};" +
+		//	$"user id={Config.Sql.User};" +
+		//	$"password={Config.Sql.Password};" +
+		//	$"database={Config.Sql.Database};" +
+		//	$"characterset={Config.Sql.CharacterSet};" +
+		//	$"port={Config.Sql.Port};" +
+		//	$"convertzerodatetime=True";
 
 		public static void Init()
 		{
@@ -28,7 +53,7 @@ namespace EmuWarface.Core
 			{
 				CreateDatabase();
 
-				using (MySqlConnection connection = new MySqlConnection(constr))
+				using (MySqlConnection connection = new(constr.Value))
 				{
 					connection.Open();
 					//GetConnection().GetAwaiter().GetResult();
@@ -47,18 +72,18 @@ namespace EmuWarface.Core
 
 		private static void CreateDatabase()
 		{
-			using (MySqlConnection connection = new MySqlConnection($"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True"))
-			{
-				connection.Open();
+			//using (MySqlConnection connection = new MySqlConnection($"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True"))
+			//{
+			//	connection.Open();
 
-				try
-				{
-					MySqlScript script = new MySqlScript(connection, File.ReadAllText("emuwarface.sql"));
-					//script.Delimiter = "$$";
-					script.Execute();
-				}
-				catch { }
-			}
+			//	try
+			//	{
+			//		MySqlScript script = new MySqlScript(connection, File.ReadAllText("emuwarface.sql"));
+			//		//script.Delimiter = "$$";
+			//		script.Execute();
+			//	}
+			//	catch { }
+			//}
 		}
 
 		public static void Query(string command)
@@ -79,7 +104,7 @@ namespace EmuWarface.Core
                     command.Connection = connection;
                     command.ExecuteNonQuery();
                 }*/
-				using (MySqlConnection connection = new MySqlConnection(constr))
+				using (MySqlConnection connection = new MySqlConnection(constr.Value))
 				{
 					connection.Open();
 
@@ -121,7 +146,7 @@ namespace EmuWarface.Core
                     reader.Close();
                 }
                 return result;*/
-				using (MySqlConnection connection = new MySqlConnection(constr))
+				using (MySqlConnection connection = new MySqlConnection(constr.Value))
 				{
 					connection.Open();
 

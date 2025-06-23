@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Game.Missions;

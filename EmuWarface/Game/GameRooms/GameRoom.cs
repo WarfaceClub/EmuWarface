@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Timers;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRoomVotes;

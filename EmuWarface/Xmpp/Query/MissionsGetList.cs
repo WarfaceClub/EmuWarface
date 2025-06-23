@@ -1,6 +1,3 @@
-using EmuWarface.Core;
-using EmuWarface.Game;
-
 namespace EmuWarface.Xmpp.Query
 {
 	public static class MissionsGetList

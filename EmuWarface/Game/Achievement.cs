@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
 using EmuWarface.Xmpp;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Game
 {

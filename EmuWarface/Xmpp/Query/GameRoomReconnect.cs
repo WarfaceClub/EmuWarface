@@ -1,5 +1,3 @@
-using EmuWarface.Core;
-
 namespace EmuWarface.Xmpp.Query
 {
 	//<gameroom_reconnect room_id="1" profile_id="21" />

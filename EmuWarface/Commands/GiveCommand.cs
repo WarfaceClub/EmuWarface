@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Items;
 using EmuWarface.Game.Notifications;
 

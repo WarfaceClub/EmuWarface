@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using EmuWarface.Core;
 using EmuWarface.Game.Missions;
 using EmuWarface.Xmpp;
 

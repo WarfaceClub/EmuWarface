@@ -4,8 +4,6 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;

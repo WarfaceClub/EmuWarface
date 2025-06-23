@@ -1,6 +1,4 @@
 using System;
-using EmuWarface.Core;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Xmpp.Query
 {

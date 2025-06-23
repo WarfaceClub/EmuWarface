@@ -1,4 +1,3 @@
-using EmuWarface.Core;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 

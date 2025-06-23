@@ -1,7 +1,5 @@
 using System;
 using System.Threading;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Shops;
 

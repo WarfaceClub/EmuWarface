@@ -1,5 +1,4 @@
 using System.Xml;
-using EmuWarface.Core;
 
 namespace EmuWarface.Xmpp.Query
 {

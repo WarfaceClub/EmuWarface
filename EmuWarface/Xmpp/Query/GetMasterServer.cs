@@ -1,5 +1,3 @@
-using EmuWarface.Core;
-
 namespace EmuWarface.Xmpp.Query
 {
 	public static class GetMasterServer

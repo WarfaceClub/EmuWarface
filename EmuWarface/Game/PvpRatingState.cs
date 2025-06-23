@@ -1,7 +1,6 @@
 using System.Data;
 using System.Linq;
 using System.Xml;
-using EmuWarface.Core;
 
 namespace EmuWarface.Game
 {

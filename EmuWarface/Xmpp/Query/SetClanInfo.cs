@@ -1,8 +1,5 @@
 using System;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Xmpp.Query
 {

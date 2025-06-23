@@ -1,11 +1,8 @@
 using System;
 using System.Xml;
-using EmuWarface.Core;
-using EmuWarface.Game;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums.Errors;
 using EmuWarface.Game.GameRooms;
-using MySql.Data.MySqlClient;
 
 namespace EmuWarface.Xmpp.Query
 {
