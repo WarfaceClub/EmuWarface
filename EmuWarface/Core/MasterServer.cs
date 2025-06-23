@@ -1,4 +1,4 @@
-﻿using EmuWarface.Game.Enums;
+using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRooms;
 using EmuWarface.Xmpp;
 using System;
@@ -46,7 +46,7 @@ namespace EmuWarface.Core
 		public static ulong GetUserId(Jid online_id)
 		{
 			if (online_id.Resource == "GameClient")
-				return ulong.Parse(online_id.Node);
+				return ulong.Parse(online_id.Local);
 
 			return 0;
 		}

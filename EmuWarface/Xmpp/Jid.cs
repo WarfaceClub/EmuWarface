@@ -1,18 +1,17 @@
 using System;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace EmuWarface.Xmpp
 {
-	public sealed class Jid
+	public sealed class Jid : IEquatable<Jid>
 	{
-		public string Domain
+		public string Local
 		{
 			get;
 			private set;
 		}
 
-		public string Node
+		public string Domain
 		{
 			get;
 			private set;
@@ -26,98 +25,112 @@ namespace EmuWarface.Xmpp
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(Node, Domain, Resource);
+			return HashCode.Combine(Local, Domain, Resource);
 		}
 
+
+		// local@domain
 		public bool IsBareJid
-		{
-			get
-			{
-				return !string.IsNullOrEmpty(Node) &&
-					!string.IsNullOrEmpty(Domain) && string.IsNullOrEmpty(Resource);
-			}
-		}
+			=> string.IsNullOrWhiteSpace(Resource);
 
+		// domain
+		// domain/resource
+		public bool IsServer => string.IsNullOrWhiteSpace(Local) && !string.IsNullOrWhiteSpace(Domain);
+
+		// local@server/resource
 		public bool IsFullJid
-		{
-			get
-			{
-				return !string.IsNullOrEmpty(Node) &&
-					!string.IsNullOrEmpty(Domain) && !string.IsNullOrEmpty(Resource);
-			}
-		}
+			=> !IsServer && !IsBareJid;
 
 		public Jid(string jid)
 		{
-			if (string.IsNullOrEmpty(jid))
-				throw new ArgumentNullException("jid");
-			Match m = Regex.Match(jid,
-				"(?:(?<node>[^@]+)@)?(?<domain>[^/]+)(?:/(?<resource>.+))?");
-			if (!m.Success)
-				throw new ArgumentException("The argument is not a valid JID.");
-			Domain = m.Groups["domain"].Value;
-			Node = m.Groups["node"].Value;
-			if (Node == string.Empty)
-				Node = null;
-			Resource = m.Groups["resource"].Value;
-			if (Resource == string.Empty)
-				Resource = null;
+			var at = jid.IndexOf('@');
+			var slash = jid.IndexOf('/');
+
+			if (at != -1)
+				Local = jid[0..at];
+
+			if (slash == -1)
+				Domain = jid[(at + 1)..];
+			else
+			{
+				Domain = jid[(at + 1)..slash];
+				Resource = jid[(slash + 1)..];
+			}
 		}
 
-		public Jid(string domain, string node, string resource = null)
+		public Jid(string domain, string local, string resource = null)
 		{
 			if (string.IsNullOrEmpty(domain))
-				throw new ArgumentNullException("domain");
+				throw new ArgumentNullException(nameof(domain));
+
+			Local = local;
 			Domain = domain;
-			Node = node;
 			Resource = resource;
 		}
 
+		public static implicit operator string(Jid jid)
+			=> jid?.ToString();
+
 		public static implicit operator Jid(string jid)
 		{
+			if (jid is null)
+				return null;
+
 			return new Jid(jid);
 		}
 
-		public Jid GetBareJid()
+		public string Bare
 		{
-			return new Jid(Domain, Node);
+			get
+			{
+				if (Local == null)
+					return Domain;
+
+				return string.Concat(Local, '@', Domain);
+			}
 		}
 
 		public override string ToString()
 		{
-			StringBuilder b = new StringBuilder();
-			if (!string.IsNullOrEmpty(Node))
-				b.Append(Node + "@");
-			b.Append(Domain);
-			if (!string.IsNullOrEmpty(Resource))
-				b.Append("/" + Resource);
-			return b.ToString();
+			var sb = new StringBuilder();
+
+			if (Local != null)
+				sb.Append(Local).Append('@');
+
+			sb.Append(Domain);
+
+			if (Resource != null)
+				sb.Append('/').Append(Resource);
+
+			return sb.ToString();
 		}
 
-		/*public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-            Jid other = obj as Jid;
-            if (other == null)
-                return false;
-            return Node == other.Node && Domain == other.Domain &&
-                Resource == other.Resource;
-        }
-        */
+		public override bool Equals(object obj)
+		{
+			return obj is Jid other && Equals(other);
+		}
+
+		public bool Equals(Jid other)
+		{
+			if (other is null)
+				return false;
+
+			return string.Equals(Local, other.Local, StringComparison.OrdinalIgnoreCase) // both case insensitive
+				&& string.Equals(Domain, other.Domain, StringComparison.OrdinalIgnoreCase) // both case insensitive
+				&& string.Equals(Resource, other.Resource, StringComparison.Ordinal); // resource is case sensitive
+		}
+
 		public static bool operator ==(Jid a, Jid b)
 		{
-			if (System.Object.ReferenceEquals(a, b))
+			if (a is null && b is null)
 				return true;
-			if (((object)a == null) || ((object)b == null))
+
+			if (a is null || b is null)
 				return false;
-			return a.Node == b.Node && a.Domain == b.Domain &&
-				a.Resource == b.Resource;
+
+			return a.Equals(b);
 		}
 
-		public static bool operator !=(Jid a, Jid b)
-		{
-			return !(a == b);
-		}
+		public static bool operator !=(Jid a, Jid b) => !(a == b);
 	}
 }

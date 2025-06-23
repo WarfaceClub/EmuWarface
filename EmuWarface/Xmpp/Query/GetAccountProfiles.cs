@@ -1,4 +1,4 @@
-﻿using EmuWarface.Core;
+using EmuWarface.Core;
 using EmuWarface.Game.Enums;
 using EmuWarface.Xmpp;
 using System.Xml;
@@ -18,7 +18,7 @@ namespace EmuWarface.Xmpp.Query
                 throw new QueryException(1);
 #endif
 
-            if (user_id != iq.From.Node)
+            if (user_id != iq.From.Local)
                 throw new QueryException(1);
 
             XmlElement get_account_profiles = Xml.Element("get_account_profiles");

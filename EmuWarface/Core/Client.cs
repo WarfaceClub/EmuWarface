@@ -450,9 +450,9 @@ namespace EmuWarface.Core
 							}
 
 							//TODO валидировать куда он шлет сообщение
-							elem.Attr("from", new Jid(to.Domain, to.Node, Profile.Nickname));
+							elem.Attr("from", new Jid(to.Domain, to.Local, Profile.Nickname));
 
-							if (to.Node.Contains("global"))
+							if (to.Local.Contains("global"))
 							{
 								lock (Server.Clients)
 								{
@@ -460,7 +460,7 @@ namespace EmuWarface.Core
 									//client.Channel.Players.ForEach(t => t.Send(elem));
 								}
 							}
-							else if (to.Node.Contains("room"))
+							else if (to.Local.Contains("room"))
 							{
 								var rCore = Profile.Room?.GetExtension<GameRoomCore>();
 
@@ -473,7 +473,7 @@ namespace EmuWarface.Core
 								}
 								//rCore.Players.ForEach(t => t.Send(elem));
 							}
-							else if (to.Node.Contains("clan"))
+							else if (to.Local.Contains("clan"))
 							{
 								lock (Server.Clients)
 								{
