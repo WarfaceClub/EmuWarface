@@ -1,7 +1,4 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Xmpp;
-using System;
-using System.Linq;
+using EmuWarface.Core;
 
 namespace EmuWarface.Xmpp.Query
 {
@@ -15,6 +12,7 @@ namespace EmuWarface.Xmpp.Query
             //TODO
             throw new QueryException(1);
 
+            /*
             if (client.Profile == null)
                 throw new InvalidOperationException();
 
@@ -26,7 +24,7 @@ namespace EmuWarface.Xmpp.Query
             if (room == null)
                 throw new QueryException(1);
 
-            client.QueryResult(iq);
+            client.QueryResult(iq);*/
         }
     }
 }

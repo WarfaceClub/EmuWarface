@@ -1,15 +1,12 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game.Enums;
-using EmuWarface.Xmpp;
-using System;
 using System.Xml;
+using EmuWarface.Core;
+using EmuWarface.Xmpp;
 
 namespace EmuWarface.Game.GameRooms
 {
 	public class GameRoomMaster : GameRoomExtension
 	{
 		public Client Client { get; private set; }
-		public int Revision { get; set; }
 
 		public GameRoomMaster(Client master)
         {

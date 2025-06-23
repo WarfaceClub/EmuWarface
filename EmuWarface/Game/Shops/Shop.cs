@@ -1,18 +1,13 @@
-﻿using EmuWarface.Core;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Xml;
+using EmuWarface.Core;
 using EmuWarface.Game.Enums.Errors;
-using EmuWarface.Game.GameRooms;
 using EmuWarface.Game.Items;
 using EmuWarface.Game.Notifications;
 using EmuWarface.Xmpp;
-using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Xml;
 
 namespace EmuWarface.Game.Shops
 {
@@ -35,15 +30,15 @@ namespace EmuWarface.Game.Shops
 				{
 					ShopItems.Add(Xml.Load(file));
 				}
-				catch (Exception e)
+				catch (Exception)
 				{
 					Log.Error("[Shop] Failed to parse ShopOffer: {0}", file);
-					throw e;
+					throw;
 				}
 			}
 
 			Log.Info("[Shop] Loaded {0} ShopItems", ShopItems.Count);
-			Log.Info("[Shop] Loaded {0} Offers",	Offers.Count);
+			Log.Info("[Shop] Loaded {0} Offers", Offers.Count);
 		}
 
 		public static void UpdateShopOffers(object sender, string name)
@@ -57,24 +52,24 @@ namespace EmuWarface.Game.Shops
 		public static void UpdateShopOffers(XmlElement data)
 		{
 			Hash = data.GetAttribute("hash");
-            try
-            {
+			try
+			{
 				foreach (XmlElement offer in data.ChildNodes)
 				{
 					Offers.Add(ShopOffer.ParseNode(offer));
 				}
 			}
-			catch(Exception e)
-            {
+			catch (Exception e)
+			{
 				Log.Error(e.ToString());
-            }
+			}
 		}
 
 		public static ShopErrorCode BuyShopOffer(Client client, ShopOffer offer, ref XmlElement purchased_item)
 		{
-			if (offer.GamePrice		> client.Profile.GameMoney ||
-				offer.CryPrice		> client.Profile.CryMoney ||
-				offer.CrownPrice	> client.Profile.CrownMoney)
+			if (offer.GamePrice > client.Profile.GameMoney ||
+				offer.CryPrice > client.Profile.CryMoney ||
+				offer.CrownPrice > client.Profile.CrownMoney)
 			{
 				return ShopErrorCode.NotEnoughMoney;
 			}
@@ -104,8 +99,8 @@ namespace EmuWarface.Game.Shops
 						client.Profile.GameMoney += offer.Quantity;
 						break;
 					case "meta_game":
-						var achiev_id	= uint.Parse(shopItem["metagame_stats"]["on_activate"].GetAttribute("unlock_achievement"));
-						var achiev		= Achievement.SetAchiev(client.ProfileId, achiev_id, 1, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+						var achiev_id = uint.Parse(shopItem["metagame_stats"]["on_activate"].GetAttribute("unlock_achievement"));
+						var achiev = Achievement.SetAchiev(client.ProfileId, achiev_id, 1, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
 						item = client.Profile.GiveItem(offer.Name, ItemType.Basic);
 						Notification.SyncNotifications(client, Notification.AchievementNotification(achiev_id, achiev.Progress, achiev.CompletionTimeUnixTimestamp));
@@ -122,7 +117,7 @@ namespace EmuWarface.Game.Shops
 							break;
 						}
 					case "random_box":
-                        {
+						{
 							RandomBox.Open(client.Profile, shopItem["random_box"], ref purchased_item, offer);
 						}
 						break;
@@ -173,11 +168,11 @@ namespace EmuWarface.Game.Shops
 			if (item != null)
 			{
 				XmlElement result = Xml.Element("profile_item")
-						.Attr("name",				item.Name)
-						.Attr("profile_item_id",	item.Id)
-						.Attr("offerId",			offer.Id)
-						.Attr("added_expiration",	offer.ExpirationTime)
-						.Attr("added_quantity",		offer.Quantity)
+						.Attr("name", item.Name)
+						.Attr("profile_item_id", item.Id)
+						.Attr("offerId", offer.Id)
+						.Attr("added_expiration", offer.ExpirationTime)
+						.Attr("added_quantity", offer.Quantity)
 						.Attr("error_status", (int)ShopErrorCode.OK);
 				result.Child(item.Serialize());
 
@@ -189,7 +184,7 @@ namespace EmuWarface.Game.Shops
 			client.Profile.CrownMoney -= (int)offer.CrownPrice;
 
 			client.Profile.Update();
-			
+
 			return ShopErrorCode.OK;
 		}
 
@@ -199,11 +194,11 @@ namespace EmuWarface.Game.Shops
 			//<item name="smokegrenade03_c" amount="7" weight="10"/>
 			//<item name="pt33_gold01_shop" weight="1" top_prize_token="box_token_cry_money_95" win_limit="1000"/>
 
-			var name				= item.GetAttribute("name");
-			var expiration			= item.HasAttribute("expiration") ? ShopOffer.ParseSeconds(item.GetAttribute("expiration")) : 0;
-			var amount				= item.HasAttribute("amount") ? int.Parse(item.GetAttribute("amount")) : 0;
-			var win_limit			= item.HasAttribute("win_limit") ? int.Parse(item.GetAttribute("win_limit")) : 0;
-			var top_prize_token		= item.HasAttribute("top_prize_token") ? item.GetAttribute("top_prize_token") : string.Empty;
+			var name = item.GetAttribute("name");
+			var expiration = item.HasAttribute("expiration") ? ShopOffer.ParseSeconds(item.GetAttribute("expiration")) : 0;
+			var amount = item.HasAttribute("amount") ? int.Parse(item.GetAttribute("amount")) : 0;
+			var win_limit = item.HasAttribute("win_limit") ? int.Parse(item.GetAttribute("win_limit")) : 0;
+			var top_prize_token = item.HasAttribute("top_prize_token") ? item.GetAttribute("top_prize_token") : string.Empty;
 
 			XmlElement shopItem = ShopItems.FirstOrDefault(x => x.GetAttribute("name") == item.GetAttribute("name"));
 			if (shopItem != null)
@@ -354,12 +349,12 @@ namespace EmuWarface.Game.Shops
 				{
 					_item = profile.GiveItem(name, ItemType.Consumable, quantity: amount);
 				}
-				else if(name.Contains("fbs"))
+				else if (name.Contains("fbs"))
 				{
 					_item = profile.GiveItem(name, ItemType.Basic);
 				}
-                else
-                {
+				else
+				{
 					_item = profile.GiveItem(name, ItemType.Permanent, durabilityPoints: 36000);
 				}
 

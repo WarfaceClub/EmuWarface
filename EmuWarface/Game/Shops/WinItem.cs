@@ -1,4 +1,6 @@
-﻿namespace EmuWarface.Game.Shops
+using System;
+
+namespace EmuWarface.Game.Shops
 {
     public struct WinItem
     {
@@ -15,6 +17,8 @@
             RepairCost = repairCost;
             DurabilityPoints = durabilityPoints;
         }
+
+		public override int GetHashCode() => HashCode.Combine(Name, RepairCost, DurabilityPoints);
 
         public override bool Equals(object obj)
         {

@@ -1,21 +1,16 @@
-﻿using EmuWarface.Core;
-using EmuWarface.Game;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Timers;
+using System.Xml;
+using EmuWarface.Core;
 using EmuWarface.Game.Clans;
 using EmuWarface.Game.Enums;
 using EmuWarface.Game.GameRoomVotes;
 using EmuWarface.Game.Missions;
 using EmuWarface.Xmpp;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
-using System.Xml;
 
 namespace EmuWarface.Game.GameRooms
 {
@@ -229,7 +224,7 @@ namespace EmuWarface.Game.GameRooms
 
                         throw new QueryException(14);
                     }
-                    break;
+                    
                 default:
                     {
                         groupId = string.Empty;
