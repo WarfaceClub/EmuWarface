@@ -12,7 +12,7 @@ namespace EmuWarface.Xmpp.Parser;
 public class XmlParser : IDisposable
 {
 	private volatile bool disposed;
-	private ByteBuffer byteBuf;
+	private ByteBuffer byteBuf = new();
 	private readonly SystemEncoding _encoding = SystemEncoding.UTF8;
 	private readonly UTF8Encoding _tokenizer = new();
 	private StringBuilder cdata = null;
@@ -123,9 +123,9 @@ public class XmlParser : IDisposable
 						case Tokens.ProcessingInstruction:
 							throw new XmlException("Invalid XML token.");
 					}
-				}
 
-				off = ct.TokenEnd;
+					off = ct.TokenEnd;
+				}
 			}
 			// no catch here, propagate exception to underlying parser (eg: XmppParser).
 			finally
@@ -161,6 +161,8 @@ public class XmlParser : IDisposable
 		name = _encoding.GetString(buf, offset + _tokenizer.MinBytesPerChar,
 			ct.NameEnd - offset - _tokenizer.MinBytesPerChar);
 
+		Log.Debug("Start tag");
+
 		OnStartElement?.Invoke(name, attributes);
 	}
 
@@ -168,6 +170,7 @@ public class XmlParser : IDisposable
 	{
 		var nameStart = offset + 2 * _tokenizer.MinBytesPerChar; // </[tagname]>
 		var name = _encoding.GetString(buf, nameStart, ct.NameEnd - nameStart);
+		Log.Debug("End tag");
 		OnEndElement?.Invoke(name);
 	}
 
@@ -229,9 +232,11 @@ public class XmlParser : IDisposable
 		{
 			cdata ??= new();
 			cdata.Append(s);
+			Log.Debug("add cdata text");
 		}
 		else
 		{
+			Log.Debug("text handler");
 			OnText?.Invoke(s);
 		}
 	}
@@ -242,6 +247,7 @@ public class XmlParser : IDisposable
 
 		lock (this)
 		{
+			Log.Debug("reset");
 			isCdata = false;
 			byteBuf.Clear();
 		}

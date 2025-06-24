@@ -35,7 +35,7 @@ namespace EmuWarface.Game
 			try
 			{
 				Load();
-				LoadCharacterMap();
+				LoadCharacterMap(Config.Settings.CharMapLanguage ?? "Russian");
 				LoadExperience();
 				LoadCVars();
 				LoadMissions();
@@ -61,7 +61,7 @@ namespace EmuWarface.Game
 			RandomBoxCards = Xml.Load(GameDataConfig.RANDOM_BOX_CARDS);
 		}
 
-		public static void LoadCharacterMap(string language = "Russian")
+		public static void LoadCharacterMap(string language)
 		{
 			var map = Xml.Load(GameDataConfig.CHAR_MAP_CONFIGURATION);
 

@@ -39,14 +39,6 @@ namespace EmuWarface.Core
 			return result.ToString();
 		});
 
-		//private static readonly string constr = $"server={Config.Sql.Server};" +
-		//	$"user id={Config.Sql.User};" +
-		//	$"password={Config.Sql.Password};" +
-		//	$"database={Config.Sql.Database};" +
-		//	$"characterset={Config.Sql.CharacterSet};" +
-		//	$"port={Config.Sql.Port};" +
-		//	$"convertzerodatetime=True";
-
 		public static void Init()
 		{
 			try
@@ -72,18 +64,24 @@ namespace EmuWarface.Core
 
 		private static void CreateDatabase()
 		{
-			//using (MySqlConnection connection = new MySqlConnection($"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True"))
-			//{
-			//	connection.Open();
+			/*
 
-			//	try
-			//	{
-			//		MySqlScript script = new MySqlScript(connection, File.ReadAllText("emuwarface.sql"));
-			//		//script.Delimiter = "$$";
-			//		script.Execute();
-			//	}
-			//	catch { }
-			//}
+			Not supported by MysqlConnector!
+
+			using (MySqlConnection connection = new MySqlConnection($"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True"))
+			{
+				connection.Open();
+
+				try
+				{
+					var script = new MySqlScript(connection, File.ReadAllText("emuwarface.sql"));
+					//script.Delimiter = "$$";
+					script.Execute();
+				}
+				catch { }
+			}
+
+			*/
 		}
 
 		public static void Query(string command)

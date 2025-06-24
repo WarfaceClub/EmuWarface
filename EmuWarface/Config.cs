@@ -110,6 +110,9 @@ namespace EmuWarface
 		public bool XmppDebugConsole { get; set; }
 		[JsonProperty("use_online_protect")]
 		public bool UseOnlineProtect { get; set; }
+
+		[JsonProperty("char_map_language", NullValueHandling = NullValueHandling.Ignore)]
+		public string CharMapLanguage { get; set; } = "Russian";
 	}
 
 	public class GameRoomConfig

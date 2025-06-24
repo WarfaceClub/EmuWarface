@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -25,9 +24,9 @@ namespace EmuWarface.Core
 
 		private Socket _socket;
 		private Stream _stream;
-		public readonly XmppParser StreamParser;
+		private XmppParser _streamParser;
 
-		private ConcurrentQueue<byte[]> _writePendingData = new ConcurrentQueue<byte[]>();
+		private ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
 		private bool _sendingData = false;
 
 		public ConnectionState State { get; set; }
@@ -41,18 +40,10 @@ namespace EmuWarface.Core
 		public DedicatedServer Dedicated { get; set; }
 
 		public bool IsConnected
-		{
-			/*get
-            {
-                try
-                {
-                    return !(_socket.Poll(1, SelectMode.SelectRead) && _socket.Available == 0);
-                }
-                catch (SocketException) { return false; }
-            }*/
-			get => _socket.Connected;
-		}
+			=> !disposed;
+
 		private Profile _profile;
+
 		public Profile Profile
 		{
 			get
@@ -88,206 +79,81 @@ namespace EmuWarface.Core
 		{
 			_socket = socket;
 			_stream = new NetworkStream(socket);
-			StreamParser = new XmppParser();
+
+			_streamParser = new XmppParser();
+			_streamParser.OnStreamStart += HandleStreamStart;
+			_streamParser.OnStreamElement += HandleStanza;
+			_streamParser.OnStreamEnd += () =>
+			{
+				Dispose();
+			};
+
 
 			// _socket.ReceiveTimeout = 10000;
 
 			IPAddress = ((IPEndPoint)_socket.RemoteEndPoint).Address.ToString();
 
-			Task.Factory.StartNew(() => ReadXmlStream(), TaskCreationOptions.LongRunning);
-		}
-
-		static readonly byte[] s_ProtectInit = Encoding.ASCII.GetBytes("protect_init");
-
-		private void ReadXmlStream()
-		{
-			bool done = false;
-			Exception exception = null;
-
-			StreamParser.OnStreamStart += HandleStreamStart;
-			StreamParser.OnStreamElement += HandleStanza;
-			StreamParser.OnStreamEnd += delegate
+			_ = Task.Run(async () =>
 			{
-				done = true;
-			};
-
-			try
-			{
-				do
+				try
 				{
-					byte[] data;
-					exception = null;
-
-					try
+					while (true)
 					{
-						data = Read();
+						await Task.Delay(16);
+
+						if (_sendQueue.TryDequeue(out var buf))
+							await _stream.WriteAsync(buf);
 					}
-					catch (ServerException e)
-					{
-						Log.Warn("[Server] {0} (ip: {1})", e.Message, IPAddress);
-						break;
-					}
-					catch (IOException)
-					{
-						break;
-					}
-					catch (Exception e)
-					{
-						Log.Error(e.ToString());
-						break;
-					}
-
-					if (data?.Length <= 0)
-						break;
-
-#warning is not optimized. consider using XmlElement.ToString() instead.
-
-					if (Config.Settings.XmppDebug)
-						Log.Xmpp(Encoding.UTF8.GetString(data));
-
-					if (data == s_ProtectInit)
-						continue;
-
-					//data = client.Read();
-					StreamParser.Write(data);
-					//StreamParser
 				}
-				while (IsConnected && !done);
-
-				/*if (client.Profile != null)
-                {
-                    //client.Presence = PlayerStatus.Logout;
-
-                    client.Profile.Room?.LeftPlayer(client);
-                    Clan.ClanMembersUpdated(client.Profile.ClanId, client.ProfileId);
-                }*/
-			}
-			catch (IOException) { }
-			//catch (ObjectDisposedException) { }
-			/*catch (Exception e)
-            {
-                string err = string.Format("[ServerException] user_id: {0}, ip: {1}\n{2}", client.UserId, client.IPAddress, e.ToString());
-
-                Log.Error(err);
-                API.SendAdmins(err);
-            }*/
-			finally
-			{
-				if (done && exception != null)
+				catch (Exception ex)
 				{
-					string err = string.Format("[ServerException] user_id: {0}, ip: {1}\n{2}", UserId, IPAddress, exception.ToString());
-
-					Log.Error(err);
-					//API.SendAdmins(err);
+					Console.WriteLine(ex);
 				}
+				finally
+				{
+					Dispose();
+				}
+			});
 
-				Dispose();
-			}
+			_ = Task.Run(async () =>
+			{
+				try
+				{
+
+					var buf = new byte[1024 * 4];
+					int len;
+
+					while (!disposed)
+					{
+						await Task.Delay(1);
+
+						if (paused)
+							continue;
+
+						len = await _stream.ReadAsync(buf);
+
+						if (len <= 0)
+							break;
+
+						_streamParser.Write(buf, len);
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex);
+				}
+				finally
+				{
+					Dispose();
+				}
+			});
 		}
 
-		/*
-
-		byte[] recvBuffer = new byte[1024 * 4];
-
-		public int? TryReadBuffer()
-		{
-			int result = 0;
-
-			if (!Config.Settings.UseOnlineProtect)
-				return _stream.Read(recvBuffer);
-			else
-			{
-				var numRead = _stream.Read(recvBuffer, 0, 12);
-
-				if (numRead != 12)
-					throw new IOException("Cannot read protect header.");
-
-				if (recvBuffer[0] == 60) // idk what is this.
-					return null;
-
-				var magic = BinaryPrimitives.ReadUInt32LittleEndian(recvBuffer.AsSpan(0, 4));
-
-				if (magic != PROTECT_MAGIC)
-					throw new IOException("Protect header magic mismatch.");
-
-				return BinaryPrimitives.ReadInt32LittleEndian(recvBuffer.AsSpan(4, 4));
-			}
-
-			return result;
-		}*/
-
-		[Obsolete("Dont allocate a new buffer for every Socket Read call")]
-		public byte[] Read()
-		{
-			if (disposed)
-				throw new ServerException("Read disposed object");
-
-			if (!Config.Settings.UseOnlineProtect)
-			{
-				var temp = new byte[1024 * 4];
-				var numBytes = _stream.Read(temp, 0, temp.Length);
-				return temp[0..numBytes];
-
-				/*
-				//return Encoding.UTF8.GetString(buffer1, 0, received1);
-				string data1 = Encoding.UTF8.GetString(buffer1, 0, received1);
-				//StreamParser.write(data1);
-				return data1;*/
-			}
-
-			byte[] buffer = new byte[12];
-
-			int received = 0;
-			while (received != 12)
-			{
-				received += _stream.Read(buffer, received, 12 - received);
-
-				if (received == 0)
-					return null;
-			}
-
-			if (buffer[0] == 60)
-				return null;
-
-			var magicBuff = new byte[4];
-			var lengthBuff = new byte[4];
-
-			Array.Copy(buffer, 0, magicBuff, 0, 4);
-			Array.Copy(buffer, 4, lengthBuff, 0, 4);
-
-			var magic = BitConverter.ToUInt32(magicBuff);
-			int length = BitConverter.ToInt32(lengthBuff);
-
-			if (magic != PROTECT_MAGIC)
-			{
-				if (buffer[0] == 60)
-					throw new ServerException("No support without 'online_use_protect'");
-
-				return null;
-			}
-
-			buffer = new byte[length];
-			received = 0;
-
-			while (received != length)
-			{
-				received += _stream.Read(buffer, received, length - received);
-
-				if (received == 0)
-					return null;
-			}
-
-			return buffer;
-
-			////return Encoding.UTF8.GetString(buffer);
-			//string data = Encoding.UTF8.GetString(buffer);
-			////StreamParser.write(data);
-			//return data;
-		}
+		volatile bool paused;
 
 		private void HandleStreamStart(XmlElement e)
 		{
-			// TODO: Validate target server if matches with server hostname (eg: to='warface').
+			Send(Encoding.UTF8.GetBytes(e.ToXmlString(leaveOpen: true).Replace("to=", "from=")));
 			StreamFeatures();
 		}
 
@@ -296,6 +162,7 @@ namespace EmuWarface.Core
 			if (elem.LocalName == "starttls"
 				&& elem.NamespaceURI == "urn:ietf:params:xml:ns:xmpp-tls")
 			{
+				paused = true;
 				StartTls();
 				return;
 			}
@@ -505,7 +372,7 @@ namespace EmuWarface.Core
 
 		public void StreamFeatures()
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new();
 			sb.Append("<stream:features>");
 
 			if (State == ConnectionState.Connected)
@@ -528,10 +395,36 @@ namespace EmuWarface.Core
 		{
 			Send(Xml.Element("proceed", "urn:ietf:params:xml:ns:xmpp-tls"));
 
-			SslStream sslStream = new SslStream(_stream, false, (sender, cert, chain, err) => true);
-			sslStream.AuthenticateAsServer(Server.Certificate, true, SslProtocols.Tls, false);
+			_ = Task.Run(async () =>
+			{
+				while (!_sendQueue.IsEmpty) // wait for pending <proceed .. /> be sent.
+				{
+					if (disposed) // maybe dispose early.
+						return;
 
-			_stream = sslStream;
+					await Task.Delay(100);
+				}
+
+				var sslStream = new SslStream(_stream, false, (sender, cert, chain, err) => true);
+
+				await sslStream.AuthenticateAsServerAsync(new SslServerAuthenticationOptions()
+				{
+					ServerCertificate = Server.Certificate,
+					AllowRenegotiation = false,
+					ClientCertificateRequired = false
+				});
+
+				_stream = sslStream;
+
+				sslStream = null;
+
+				_ = Task.Run(async () =>
+				{
+					await Task.Delay(500);
+					_streamParser.Reset();
+					paused = false;
+				});
+			});
 		}
 
 		public bool Authenticate(XmlElement e)
@@ -683,7 +576,7 @@ namespace EmuWarface.Core
 				.Attr("observer", Profile.RoomPlayer.Observer ? 1 : 0)
 				.Attr("skill", Profile.RoomPlayer.Skill.ToString("F3").Replace(',', '.'))
 				.Attr("nickname", Profile.Nickname)
-				.Attr("clanName",       /*TODO get name*/Game.Clans.Clan.GetClanName(Profile.ClanId))
+				.Attr("clanName", Clan.GetClanName(Profile.ClanId))
 				.Attr("class_id", (int)Profile.CurrentClass)
 				.Attr("online_id", Jid.ToString())
 				.Attr("group_id", Profile.RoomPlayer.GroupId)
@@ -769,109 +662,15 @@ namespace EmuWarface.Core
 			if (disposed)
 				return;
 
-#warning Not optimized: Prefer using binary stream directly into stream OR allocate temp buffer to read/write protect headers.
-
-			MemoryStream memoryStream = new MemoryStream();
-			BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
-
-			if (Config.Settings.UseOnlineProtect)
-			{
-				binaryWriter.Write(PROTECT_MAGIC);
-				binaryWriter.Write(data.LongLength);
-			}
-			binaryWriter.Write(data);
-
-			EnqueueDataForWrite(memoryStream.ToArray());
-			//await _stream.WriteAsync(memoryStream.ToArray());
-		}
-
-		private void EnqueueDataForWrite(byte[] buffer)
-		{
-			if (disposed)
-				return;
-
-			if (buffer == null)
-				return;
-
-			_writePendingData.Enqueue(buffer);
-
-			lock (_writePendingData)
-			{
-				if (_sendingData)
-				{
-					return;
-				}
-				else
-				{
-					_sendingData = true;
-				}
-			}
-
-			Write();
-		}
-
-		private void Write()
-		{
-			byte[] buffer = null;
-			try
-			{
-				if (_writePendingData.Count > 0 && _writePendingData.TryDequeue(out buffer))
-				{
-					_stream.BeginWrite(buffer, 0, buffer.Length, WriteCallback, _stream);
-					//_stream.Write(buffer, 0, buffer.Length);
-
-					Write();
-				}
-				else
-				{
-					lock (_writePendingData)
-					{
-						_sendingData = false;
-					}
-
-					//return true;
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-
-				// handle exception then
-				lock (_writePendingData)
-				{
-					_sendingData = false;
-				}
-
-				Dispose();
-			}
-
-			//return false;
-		}
-
-		private void WriteCallback(IAsyncResult ar)
-		{
-			Stream stream = (Stream)ar.AsyncState;
-			try
-			{
-				stream.EndWrite(ar);
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-				//Log.Warn("Stream Write Exception 2");
-
-				Dispose();
-				return;
-				// handle exception                
-			}
-
-			Write();
+			_sendQueue.Enqueue(data);
 		}
 
 		public void Dispose()
 		{
 			if (disposed)
 				return;
+
+			GC.SuppressFinalize(this);
 
 			disposed = true;
 

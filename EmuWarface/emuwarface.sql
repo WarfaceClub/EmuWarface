@@ -318,7 +318,7 @@ CREATE TABLE IF NOT EXISTS `emu_users` (
   `ipaddress` varchar(16) NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `login` (`login`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Dumping data for table emuwarface.emu_users: ~2 rows (approximately)
 INSERT IGNORE INTO `emu_users` (`user_id`, `login`, `password`, `token`, `permission`, `ipaddress`) VALUES

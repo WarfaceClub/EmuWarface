@@ -81,6 +81,12 @@ public sealed class XmppParser : IDisposable
 		}
 	}
 
+	public void Write(byte[] buf, int len)
+	{
+		lock (this)
+			parser.Write(buf, 0, len);
+	}
+
 	public void Write(byte[] buf)
 	{
 		lock (this)
