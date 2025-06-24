@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Xml;
 using XpNet;
 using StringBuilder = System.Text.StringBuilder;
@@ -161,16 +162,22 @@ public class XmlParser : IDisposable
 		name = _encoding.GetString(buf, offset + _tokenizer.MinBytesPerChar,
 			ct.NameEnd - offset - _tokenizer.MinBytesPerChar);
 
-		Log.Debug("Start tag");
+		Debug.WriteLine("Start tag");
 
 		OnStartElement?.Invoke(name, attributes);
 	}
 
 	void EndTag(byte[] buf, int offset, ContentToken ct, Tokens tok)
 	{
-		var nameStart = offset + 2 * _tokenizer.MinBytesPerChar; // </[tagname]>
-		var name = _encoding.GetString(buf, nameStart, ct.NameEnd - nameStart);
-		Log.Debug("End tag");
+		string name;
+
+		if (tok == Tokens.EmptyElementWithAtts || tok == Tokens.EmptyElementNoAtts)
+			name = _encoding.GetString(buf, offset + _tokenizer.MinBytesPerChar, ct.NameEnd - offset - _tokenizer.MinBytesPerChar);
+		else
+			name = _encoding.GetString(buf, offset + _tokenizer.MinBytesPerChar * 2, ct.NameEnd - offset - _tokenizer.MinBytesPerChar * 2);
+
+		Debug.WriteLine("End tag");
+
 		OnEndElement?.Invoke(name);
 	}
 
@@ -232,11 +239,11 @@ public class XmlParser : IDisposable
 		{
 			cdata ??= new();
 			cdata.Append(s);
-			Log.Debug("add cdata text");
+			Debug.WriteLine("add cdata text");
 		}
 		else
 		{
-			Log.Debug("text handler");
+			Debug.WriteLine("text handler");
 			OnText?.Invoke(s);
 		}
 	}
@@ -247,7 +254,7 @@ public class XmlParser : IDisposable
 
 		lock (this)
 		{
-			Log.Debug("reset");
+			Debug.WriteLine("reset");
 			isCdata = false;
 			byteBuf.Clear();
 		}

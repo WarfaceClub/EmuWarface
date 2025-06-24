@@ -81,10 +81,27 @@ namespace EmuWarface.Core
 			_stream = new NetworkStream(socket);
 
 			_streamParser = new XmppParser();
-			_streamParser.OnStreamStart += HandleStreamStart;
-			_streamParser.OnStreamElement += HandleStanza;
+
+			_streamParser.OnStreamStart += e =>
+			{
+				if (Config.Settings.XmppDebug)
+					Log.Xmpp(e.OuterXml);
+
+				HandleStreamStart(e);
+			};
+			_streamParser.OnStreamElement += e =>
+			{
+				if (Config.Settings.XmppDebug)
+					Log.Xmpp(e.OuterXml);
+
+				HandleStanza(e);
+			};
+
 			_streamParser.OnStreamEnd += () =>
 			{
+				if (Config.Settings.XmppDebug)
+					Log.Xmpp("</stream:stream>");
+
 				Dispose();
 			};
 
@@ -380,7 +397,7 @@ namespace EmuWarface.Core
 				if (_stream is NetworkStream)
 					sb.Append("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>");
 
-				sb.Append("<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>WARFACE</mechanism></mechanisms>");
+				sb.Append("<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms>");
 			}
 			else
 			{
@@ -402,7 +419,7 @@ namespace EmuWarface.Core
 					if (disposed) // maybe dispose early.
 						return;
 
-					await Task.Delay(100);
+					await Task.Delay(1);
 				}
 
 				var sslStream = new SslStream(_stream, false, (sender, cert, chain, err) => true);
@@ -429,12 +446,18 @@ namespace EmuWarface.Core
 
 		public bool Authenticate(XmlElement e)
 		{
-			string[] data = Utils.Base64Decode(e.InnerText).Split(new char[1], StringSplitOptions.RemoveEmptyEntries);
+			//string[] data = Utils.Base64Decode(e.InnerText).Split(new char[1], StringSplitOptions.RemoveEmptyEntries);
+
+			var data = Encoding.UTF8.GetString(Convert.FromBase64String(e.InnerText))
+				.Split('\0', StringSplitOptions.RemoveEmptyEntries);
 
 			if (data.Length != 2)
 				return false;
 
-			if (data[1].Contains("dedicated"))
+			var login = data[^2];
+			var password = data[^1];
+
+			if (password.Contains("dedicated"))
 			{
 				if (!Config.Settings.DedicatedHosts.Contains(IPAddress))
 					return false;
@@ -443,14 +466,13 @@ namespace EmuWarface.Core
 			}
 			else
 			{
-				var uid = ulong.Parse(data[1]);
-				var token = data[0];
-
-				if (string.IsNullOrEmpty(token))
+				if (string.IsNullOrEmpty(password))
 				{
 					Send(Xml.Element("failure", "urn:ietf:params:xml:ns:xmpp-sasl"));
 					return false;
 				}
+
+				/*
 
 				//<failure xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><warface-failure>&lt;error&gt;&lt;code&gt;"+accountData.error.code+"&lt;/code&gt;&lt;message&gt;"+accountData.error.message+"&lt;/message&gt;&lt;unbantime&gt;"+accountData.error.unbantime+"&lt;/unbantime&gt;&lt;/error&gt;</warface-failure></failure>
 
@@ -463,22 +485,22 @@ namespace EmuWarface.Core
 					return false;
 				}
 
-				MySqlCommand cmd = new MySqlCommand("SELECT * FROM emu_users WHERE user_id=@user_id AND token=@token");
-				cmd.Parameters.AddWithValue("@user_id", uid);
-				cmd.Parameters.AddWithValue("@token", token);
+				*/
+
+				using var cmd = new MySqlCommand("SELECT `user_id`, `permission` FROM emu_users WHERE login=@p1 AND PASSWORD=@p2;");
+				cmd.Parameters.AddWithValue("@p1", login);
+				cmd.Parameters.AddWithValue("@p2", password);
 
 				var db = SQL.QueryRead(cmd);
+
 				if (db.Rows.Count == 0)
 				{
-#if !DEBUG
 					Send(Xml.Element("failure", "urn:ietf:params:xml:ns:xmpp-sasl"));
 					return false;
-#endif
 				}
-				else
-				{
-					Permission = (Permission)(byte)db.Rows[0]["permission"];
-				}
+
+				Permission = (Permission)(byte)db.Rows[0]["permission"];
+				var uid = (ulong)(long)db.Rows[0]["user_id"];
 				UserId = uid;
 
 				lock (Server.Clients)

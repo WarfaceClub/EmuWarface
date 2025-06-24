@@ -126,9 +126,7 @@ namespace EmuWarface.Game.Notifications
 		{
 			List<Notification> notifs = new List<Notification>();
 
-#if DEBUG
-            return notifs;
-#endif
+#if !DEBUG
 
 			var result = SQL.QueryRead($"SELECT * FROM emu_notifications WHERE profile_id={profile_id}");
 
@@ -146,6 +144,7 @@ namespace EmuWarface.Game.Notifications
 				}
 			}
 
+#endif
 			return notifs;
 		}
 

@@ -5,109 +5,62 @@ namespace EmuWarface.Core
 {
 	public static class SQL
 	{
-		//private static MySqlConnection sqlConnection = new MySqlConnection(constr);
+		static readonly MySqlConnectorFactory s_ConnectionFactory = MySqlConnectorFactory.Instance;
 
-		/*private static readonly string constr = new MySqlConnectionStringBuilder()
-        {
-            Server              = EmuConfig.Sql.Server,
-            UserID              = EmuConfig.Sql.User,
-            Password            = EmuConfig.Sql.Password,
-            Database            = EmuConfig.Sql.Database,
-            CharacterSet        = EmuConfig.Sql.CharacterSet,
-            Port                = EmuConfig.Sql.Port,
-            //Pooling             = true,
-            ConvertZeroDateTime = true
-        }.ToString();*/
-
-		static Lazy<string> constr = new Lazy<string>(() =>
+		static Lazy<string> s_ConnectionString = new(() =>
 		{
-			var result = new MySqlConnectionStringBuilder();
-			result.Server = Config.Sql.Server;
-			result.UserID = Config.Sql.User;
-			result.Password = Config.Sql.Password;
-			result.Database = Config.Sql.Database;
+			var result = new MySqlConnectionStringBuilder
+			{
+				Server = Config.Sql.Server,
+				UserID = Config.Sql.User,
+				Password = Config.Sql.Password,
+				Database = Config.Sql.Database,
+				Port = Config.Sql.Port,
+				ConvertZeroDateTime = true,
+				CancellationTimeout = 15_000,
+				ConnectionProtocol = MySqlConnectionProtocol.Tcp,
+			};
 
 			if (!string.IsNullOrWhiteSpace(Config.Sql.CharacterSet))
 				result.CharacterSet = Config.Sql.CharacterSet;
 
-			result.Port = Config.Sql.Port;
-
-			result.ConvertZeroDateTime = true;
-			result.CancellationTimeout = 15_000;
-			result.ConnectionProtocol = MySqlConnectionProtocol.Tcp;
-
 			return result.ToString();
-		});
+		}, true);
+
+		public static MySqlConnection OpenConnection()
+		{
+			var con = new MySqlConnection(s_ConnectionString.Value);
+			con.Open();
+			return con;
+		}
 
 		public static void Init()
 		{
 			try
 			{
-				CreateDatabase();
-
-				using (MySqlConnection connection = new(constr.Value))
-				{
-					connection.Open();
-					//GetConnection().GetAwaiter().GetResult();
-				}
+				using (_ = OpenConnection())
+					Log.Info("[SQL] Connected to '{0}' database", Config.Sql.Database);
 			}
 			catch (Exception)
 			{
 				Log.Error("[SQL] Failed to connect to '{0}' database", Config.Sql.Database);
 				throw;
 			}
-			finally
-			{
-				Log.Info("[SQL] Connected to '{0}' database", Config.Sql.Database);
-			}
-		}
-
-		private static void CreateDatabase()
-		{
-			/*
-
-			Not supported by MysqlConnector!
-
-			using (MySqlConnection connection = new MySqlConnection($"server={Config.Sql.Server};user id={Config.Sql.User};password={Config.Sql.Password};characterset={Config.Sql.CharacterSet};port={Config.Sql.Port};convertzerodatetime=True"))
-			{
-				connection.Open();
-
-				try
-				{
-					var script = new MySqlScript(connection, File.ReadAllText("emuwarface.sql"));
-					//script.Delimiter = "$$";
-					script.Execute();
-				}
-				catch { }
-			}
-
-			*/
 		}
 
 		public static void Query(string command)
 		{
 			using (MySqlCommand cmd = new MySqlCommand(command))
-			{
 				Query(cmd);
-			}
 		}
 
 		public static void Query(MySqlCommand command)
 		{
 			try
 			{
-				/*MySqlConnection connection = GetConnection().GetAwaiter().GetResult();
-                lock (sqlConnection)
-                {
-                    command.Connection = connection;
-                    command.ExecuteNonQuery();
-                }*/
-				using (MySqlConnection connection = new MySqlConnection(constr.Value))
+				using (var con = OpenConnection())
 				{
-					connection.Open();
-
-					command.Connection = connection;
-
+					command.Connection = con;
 					command.ExecuteNonQuery();
 				}
 			}
@@ -121,63 +74,40 @@ namespace EmuWarface.Core
 		public static DataTable QueryRead(string command)
 		{
 
-			using (MySqlCommand cmd = new MySqlCommand(command))
-			{
-				return QueryRead(cmd);
-			}
+			using (var cmd = new MySqlCommand(command))
+				return QueryRead(cmd, false);
 		}
 
-		public static DataTable QueryRead(MySqlCommand command)
+		public static DataTable QueryRead(MySqlCommand command, bool dispose = true)
 		{
 			try
 			{
-				/*DataTable result;
-                MySqlConnection connection = GetConnection().GetAwaiter().GetResult();
-                lock (sqlConnection)
-                {
-                    command.Connection = connection;
-                    DbDataReader reader = command.ExecuteReader();
-
-                    result = new DataTable();
-                    result.Load(reader);
-
-                    reader.Close();
-                }
-                return result;*/
-				using (MySqlConnection connection = new MySqlConnection(constr.Value))
+				using (var connection = OpenConnection())
 				{
-					connection.Open();
-
 					command.Connection = connection;
-					MySqlDataReader reader = command.ExecuteReader();
-					DataTable result = new DataTable();
-					result.Load(reader);
+					var result = new DataTable();
+
+					var reader = command.ExecuteReader();
+
+					if (dispose)
+					{
+						using (command)
+							result.Load(reader);
+					}
+					else
+					{
+						result.Load(reader);
+					}
 
 					return result;
 				}
 			}
 			catch (Exception e)
 			{
-				//TODO
-				Log.Error(e.ToString());
-				throw;
+				Log.Error("[SQL] Querying failed:" + e);
 			}
+
+			return new();
 		}
-
-		/*private static async Task<MySqlConnection> GetConnection()
-        {
-            if (sqlConnection.State.HasFlag(System.Data.ConnectionState.Open))
-                return sqlConnection;
-
-            //MySqlConnection sqlConnection = new MySqlConnection(constr);
-            sqlConnection = new MySqlConnection(constr);
-            Task<MySqlConnection> ConnectTask = new Task<MySqlConnection>(delegate
-            {
-                sqlConnection.Open();
-                return sqlConnection;
-            });
-            ConnectTask.Start();
-            return await ConnectTask;
-        }*/
 	}
 }

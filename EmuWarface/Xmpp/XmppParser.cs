@@ -60,13 +60,19 @@ public sealed class XmppParser : IDisposable
 				OnStreamEnd?.Invoke();
 			else
 			{
-				var parent = current.ParentNode as XmlElement;
+				var parent = current?.ParentNode as XmlElement;
 
-				if (parent == null)
+				if (parent == null && current != null)
 					OnStreamElement?.Invoke(current);
 
 				current = parent;
 			}
+		};
+
+		parser.OnText += text =>
+		{
+			if (current != null)
+				current.AppendChild(current.OwnerDocument.CreateTextNode(text));
 		};
 	}
 
